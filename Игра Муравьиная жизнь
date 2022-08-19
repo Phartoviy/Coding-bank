@@ -1,0 +1,544 @@
+#include <iostream>
+#include <time.h>
+#include <map>
+#include <conio.h>
+#include <vector>
+using namespace std;
+
+bool FlagAttack1 = 0, FlagOut = 0;
+int RedLichinki, GreenLichinki;
+struct Stack
+{
+	int vetochka;
+	int rosinka;
+	int listik;
+	int kamushek;
+};
+struct Stack stack1[] = { 26,36,0,0 ,49,49,0,0 ,31,36,32,0 ,47,0,29,0 ,29,0,37,17 };
+map <string, int> ResGreen = {
+	{"vetochka",0},
+{"rosinka",0},
+{"listik",0},
+{"kamushek",0}
+};
+map <string, int> ResRed = {
+	{"vetochka",0},
+{"rosinka",0},
+{"listik",0},
+{"kamushek",0}
+};
+class Ant
+{
+public:
+	int health;
+	int armor;
+	char kolony;
+	int gps;
+	void Attack(int damage, int KolvoBite, int vgps)
+	{
+		if (vgps == gps && health > 0)//atack voin
+		{
+			FlagAttack1 = 1;
+			(armor > 0) ? armor = armor - (damage * KolvoBite) : health = health - (damage * KolvoBite);
+		}
+	}
+	template <class K>
+	static int Podschet(vector <K>& v)
+	{
+		int Summ = 0;
+		for (int j = 0; j < v.size(); j++)
+		{
+			if (v[j].health > 0)
+				Summ++;
+		}
+		return Summ;
+	}
+	Ant() {}
+	Ant(int h, int a, char k, int g)
+	{
+		health = h;
+		armor = a;
+		kolony = k;
+		gps = g;
+	}
+	virtual void KLich() {}
+	virtual void SborRes(Stack stackRandom) {}
+	static void PrintV(string type, int health, int armor, int damage, string Qname, char rass)
+	{
+		cout << "---------------------------------------\n---------------------------------------";
+		cout << "\nТип: " << type << endl;
+		(rass == 'v') ? cout << "---Параметры: здоровье = " << health << ", защита = " << armor << ", урон = " << damage << endl : cout << "---Параметры: здоровье = " << health << ", защита = " << armor << endl;
+		cout << "---Королева << " << Qname << " >>" << endl;
+		cout << "---------------------------------------\n---------------------------------------" << endl;
+	}
+};
+class Warrior : public Ant
+{
+public:
+	int damage;
+	//может атаковать несколько целей и иметь эффекты
+	int target;
+	int KolvoBite;
+	Warrior(int h, int a, char k, int g, int d, int t, int K) : Ant(h, a, k, g)
+	{
+		target = t;
+		KolvoBite = K;
+		damage = d;
+	}
+	Warrior() {}
+};
+class Special : public Ant
+{
+public:
+	//может атаковать и иметь эффекты
+	int damage;
+	int target;
+	Special(int h, int a, char k, int g, int d, int t) :Ant(h, a, k, g)
+	{
+		damage = d;
+		target = t;
+	}
+	void Attack(int damage, int KolvoBite, int vgps)
+	{
+		if (vgps == gps && health > 0)//atack red voin
+		{
+			FlagAttack1 = 1;
+			(armor > 0) ? armor = armor - (damage * KolvoBite) : health = health - (damage * KolvoBite);
+		}
+	}
+};
+class Worker : public Ant
+{
+public:
+	int KolvoRes;
+	char Resurs[2];
+	virtual void SborRes(Stack stackRandom)       //sbor resursov v klasse
+	{
+		for (int i = 0; i < KolvoRes; i++)
+		{
+			bool flag = 0;
+			for (int j = 0; j < 2; j++) {
+				if (flag == 0) {
+					switch (Resurs[j])
+					{
+					case 'v':
+					{
+						if (stackRandom.vetochka > 0) {
+							stackRandom.vetochka = stackRandom.vetochka - 1;
+							(kolony == 'g') ? ResGreen["vetochka"]++ : ResRed["vetochka"]++;
+							flag = 1;
+						}
+						continue;
+						break; }
+					case 'r':
+					{
+						if (stackRandom.rosinka > 0) {
+							stackRandom.rosinka = stackRandom.rosinka - 1;
+							(kolony == 'g') ? ResGreen["rosinka"]++ : ResRed["rosinka"]++;
+							flag = 1;
+						}
+						continue;
+						break; }
+					case 'l':
+					{
+						if (stackRandom.listik > 0) {
+							stackRandom.listik = stackRandom.listik - 1;
+							(kolony == 'g') ? ResGreen["listik"]++ : ResRed["listik"]++;
+							flag = 1;
+						}
+						continue;
+						break; }
+					case 'k':
+					{
+						if (stackRandom.kamushek > 0) {
+							stackRandom.kamushek = stackRandom.kamushek - 1;
+							(kolony == 'g') ? ResGreen["kamushek"]++ : ResRed["kamushek"]++;
+							flag = 1;
+						}
+						if (stackRandom.kamushek <= 0)
+						{
+							(kolony == 'r' && Resurs[0] == 'k' && Resurs[1] == 'k') ? ResRed["kamushek"]++ : ResRed["kamushek"] = ResRed["kamushek"];
+						}
+						continue;
+						break; }
+					default:
+						break;
+					}
+				}
+			}
+			stack1[gps] = stackRandom;
+		}
+	}
+	Worker(int h, int a, char k, int g, int K, char Resurs1, char Resurs2) :Ant(h, a, k, g)
+	{
+		this->KolvoRes = K;
+		this->Resurs[0] = Resurs1;
+		this->Resurs[1] = Resurs2;
+	}
+	Worker() {}
+};
+vector <Worker> Rabochie{ Worker(2, 1, 'r', 0, 1, 'v', 'r') ,Worker(2, 1, 'r', 0, 1, 'v', 'r') ,Worker(2, 1, 'r', 0, 1, 'v', 'r') ,Worker(2, 1, 'r', 0, 1, 'r', 'v') ,Worker(2, 1, 'r', 0, 1, 'r', 'v') ,
+Worker(2, 1, 'r', 0, 1, 'r', 'v') ,Worker(2, 1, 'r', 0, 1, 'r', 'v') ,Worker(6, 2, 'r', 0, 2, 'k', 'v') ,Worker(6, 2, 'r', 0, 2, 'k', 'v') ,Worker(6, 2, 'r', 0, 2, 'k', 'v') ,
+Worker(6, 2, 'r', 0, 2, 'k', 'v') ,Worker(6, 2, 'r', 0, 2, 'k', 'v') ,Worker(6, 2, 'r', 0, 2, 'k', 'v') ,Worker(1, 0, 'r', 0, 1, 'k', 'k') ,Worker(1, 0, 'r', 0, 1, 'k', 'k') ,Worker(1, 0, 'r', 0, 1, 'k', 'k') };
+vector <Worker> GRabochie{ Worker(10, 6, 'g', 0, 3, 'r', 'l') ,Worker(10, 6, 'g', 0, 3, 'r', 'l') ,Worker(10, 6, 'g', 0, 3, 'r', 'l') ,Worker(2, 1, 'g', 0, 1, 'k', 'v') ,Worker(2, 1, 'g', 0, 1, 'k', 'v') ,Worker(2, 1, 'g', 0, 1, 'k', 'v') ,
+Worker(2, 1, 'g', 0, 1, 'v', 'k') ,Worker(2, 1, 'g', 0, 1, 'k', 'v') ,Worker(2, 1, 'g', 0, 1, 'k', 'v') ,Worker(2, 1, 'g', 0, 1, 'l', 'r') ,Worker(2, 1, 'g', 0, 1, 'l', 'r') ,Worker(2, 1, 'g', 0, 1, 'l', 'r') ,
+Worker(2, 1, 'g', 0, 1, 'l', 'r') ,Worker(2, 1, 'g', 0, 1, 'r', 'l') ,Worker(2, 1, 'g', 0, 1, 'r', 'l') ,Worker(2, 1, 'g', 0, 1, 'l', 'r') ,Worker(2, 1, 'g', 0, 1, 'l', 'r') };
+vector <Warrior> RedWarrior{ Warrior(1, 0, 'r', 0, 1, 1, 1) ,Warrior(1, 0, 'r', 0, 1, 1, 1) ,Warrior(1, 0, 'r', 0, 1, 1, 1) ,Warrior(1, 1, 'r', 0, 1, 1, 1) ,Warrior(1, 1, 'r', 0, 1, 1, 1) ,Warrior(1, 1, 'r', 0, 1, 1, 1) ,
+Warrior(10, 6, 'r', 0, 4, 3, 1) ,Warrior(10, 6, 'r', 0, 4, 3, 1) ,Warrior(10, 6, 'r', 0, 4, 3, 1) };
+vector <Warrior> GreenWarrior{ Warrior(8, 4, 'g', 0, 3, 2, 2) ,Warrior(8, 4, 'g', 0, 3, 2, 2) ,Warrior(1, 0, 'g', 0, 1, 1, 1) ,Warrior(1, 0, 'g', 0, 1, 1, 1) ,Warrior(1, 0, 'g', 0, 1, 1, 1) ,Warrior(1, 0, 'g', 0, 1, 1, 1) ,
+Warrior(1, 0, 'g', 0, 1, 1, 1) ,Warrior(1, 0, 'g', 0, 1, 1, 1) ,Warrior(10, 6, 'g', 0, 4, 3, 1) };
+class Queen : public Ant
+{
+public:
+	int damage;
+	string name;
+	//выращивает личинок
+	int CiclRostaLichinok;
+	virtual void KLich()
+	{
+		int kolvoLich = 1 + rand() % (11 - 1);
+		(kolony == 'g') ? GreenLichinki = kolvoLich : RedLichinki = kolvoLich;
+		for (int i = 0; i < kolvoLich; i++)
+		{
+			int randomTemp = rand() % 2;
+			if (randomTemp == 0)
+			{
+				if (kolony == 'r')
+				{
+					RedWarrior.push_back(Warrior(1, 0, 'r', 0, 4, 3, 1));
+				}
+				else
+				{
+					GreenWarrior.push_back(Warrior(8, 4, 'g', 0, 3, 2, 2));
+				}
+			}
+			else
+			{
+				if (kolony == 'r')
+				{
+					Rabochie.push_back(Worker(6, 2, 'r', 0, 2, 'k', 'v'));
+				}
+				else
+				{
+					GRabochie.push_back(Worker(2, 1, 'g', 0, 1, 'k', 'v'));
+				}
+			}
+		}
+	}
+	Queen(int h, int a, char k, int g, int d, string n, int C) :Ant(h, a, k, g)
+	{
+		CiclRostaLichinok = C;
+		name = n;
+		damage = d;
+	}
+};
+int main()
+{
+	setlocale(LC_ALL, "Rus");
+	srand(time(NULL));
+	Special RedShmel(20, 8, 'r', 0, 12, 2);
+	Special GreenJuk(17, 7, 'g', 0, 0, 0);
+	Queen RedQueen(17, 7, 'r', 0, 15, "Агриппина", 3);
+	Queen GreenQueen(27, 8, 'g', 0, 19, "Феодора", 3);
+	Special WoundedJuk(8, 3, 'o', 0, 0, 0);           //dop zadanie
+	int randomkolony = rand() % 2;
+	(randomkolony == 1) ? WoundedJuk.kolony = 'r' : WoundedJuk.kolony = 'g';
+	int randomDay = 1 + rand() % 9;
+	for (int day = 0; day < 11; day++)
+	{
+		int RVetochka = ResRed["vetochka"], RRosinka = ResRed["rosinka"], RListik = ResRed["listik"], RKamushek = ResRed["kamushek"];
+		int GVetochka = ResGreen["vetochka"], GRosinka = ResGreen["rosinka"], GListik = ResGreen["listik"], GKamushek = ResGreen["kamushek"];
+		bool FlagDop = 0;
+		FlagOut = 0;
+		if (day == 4 || day == 8)
+		{
+			RedQueen.KLich();
+			GreenQueen.KLich();
+		}
+		int s1 = 0, s2 = 0;
+		if (day == randomDay || (day < randomDay + 3 && day>randomDay))
+		{
+			(WoundedJuk.kolony == 'r') ? s1++ : s2++;
+			FlagDop = 1;
+		}
+		//Sbor res
+		for (int i = 0; i < Rabochie.size(); i++)
+		{
+			if (Rabochie[i].health > 0) {
+				int randomStack = rand() % 5;
+				Rabochie[i].gps = randomStack + 1;
+				Rabochie[i].SborRes(stack1[randomStack + 1]);
+			}
+		}
+		for (int i = 0; i < GRabochie.size(); i++)
+		{
+			if (GRabochie[i].health > 0) {
+				int randomStack = rand() % 5;
+				GRabochie[i].gps = randomStack + 1;
+				GRabochie[i].SborRes(stack1[randomStack + 1]);
+			}
+		}
+		//Attack
+		for (int k1 = 0; k1 < RedWarrior.size(); k1++)
+		{
+			RedWarrior[k1].gps = rand() % 5 + 1;
+		}
+		for (int k1 = 0; k1 < GreenWarrior.size(); k1++)
+		{
+			GreenWarrior[k1].gps = rand() % 5 + 1;
+		}
+		RedShmel.gps = rand() % 5 + 1;
+		GreenJuk.gps = rand() % 5 + 1;
+		//закончилось распределения по кучкам
+		for (int g = 0; g < GreenWarrior.size(); g++)
+		{
+			if (GreenWarrior[g].health>0){
+				for (int t2 = 0; t2 < GreenWarrior[g].target; t2++) {
+					FlagAttack1 = 0;
+					for (int b = 0; b < RedWarrior.size(); b++)
+					{
+						RedWarrior[b].Attack(GreenWarrior[g].damage, GreenWarrior[g].KolvoBite, GreenWarrior[g].gps);
+						if (FlagAttack1 == 1)
+							break;
+					}
+					if (FlagAttack1 == 0) {
+						for (int a = 0; a < Rabochie.size(); a++)
+						{
+							Rabochie[a].Attack(GreenWarrior[g].damage, GreenWarrior[g].KolvoBite, GreenWarrior[g].gps);
+							if (FlagAttack1 == 1)
+								break;
+						}
+					}
+					if (FlagAttack1 == 0)
+						RedShmel.Attack(GreenWarrior[g].damage, GreenWarrior[g].KolvoBite, GreenWarrior[g].gps);
+				}
+			}
+		}
+		for (int r = 0; r < RedWarrior.size(); r++)
+		{
+			if (RedWarrior[r].health > 0) {
+				for (int t1 = 0; t1 < RedWarrior[r].target; t1++) {
+					FlagAttack1 = 0;
+					for (int y = 0; y < GreenWarrior.size(); y++)
+					{
+						GreenWarrior[y].Attack(RedWarrior[r].damage, RedWarrior[r].KolvoBite, RedWarrior[r].gps);
+						if (FlagAttack1 == 1)
+							break;
+					}
+					if (FlagAttack1 == 0)
+					{
+						for (int x = 0; x < GRabochie.size(); x++)
+						{
+							GRabochie[x].Attack(RedWarrior[r].damage, RedWarrior[r].KolvoBite, RedWarrior[r].gps);
+							if (FlagAttack1 == 1)
+								break;
+						}
+					}
+					if (FlagAttack1 == 0)
+						GreenJuk.Attack(RedWarrior[r].damage, RedWarrior[r].KolvoBite, RedWarrior[r].gps);
+				}
+			}
+		}
+		for (int h = 0; h < RedShmel.target; h++)//cicl attaci shmel
+		{
+			if (RedShmel.health > 0) {
+				FlagAttack1 = 0;
+				for (int y = 0; y < GreenWarrior.size(); y++)
+				{
+					GreenWarrior[y].Attack(RedShmel.damage, 1, RedShmel.gps);
+					if (FlagAttack1 == 1)
+						break;
+				}
+				if (FlagAttack1 == 0)
+				{
+					for (int x = 0; x < GRabochie.size(); x++)
+					{
+						GRabochie[x].Attack(RedShmel.damage, 1, RedShmel.gps);
+						if (FlagAttack1 == 1)
+							break;
+					}
+				}
+			}
+		}
+		cout << "****************************************************************";
+		cout << "\n------------------------------------------------------------";
+		cout << "\n\t\t\x1b[33mНачало дня:\x1b[0m";
+		cout << "\nДень " << day + 1 << " до засухи осталось " << 10 - day << " дней\n" << endl;
+		int RWar = 0, RRab = 0, GWar = 0,GRab = 0;
+		if (RedShmel.health > 0)
+			s1++;
+		if (GreenJuk.health > 0)
+			s2++;
+		cout << "Колония \x1b[31m< Красные >\x1b[0m :\n" << "---Королева < Агриппина > ,личинки = " << RedLichinki << endl;
+		cout << "---Ресурсы: v = " << ResRed["vetochka"] << "  r = " << ResRed["rosinka"] << "  l = " << ResRed["listik"] << "  k = " << ResRed["kamushek"] << endl;
+		cout << "---Популяция " << Ant::Podschet(RedWarrior)+ Ant::Podschet(Rabochie) + s1 << ": r = " << Ant::Podschet(Rabochie) << ", v = " << Ant::Podschet(RedWarrior) << ", o = " << s1 << " ;\n" << endl;
+		cout << "Колония \x1b[32m< Зеленая >\x1b[0m :\n" << "---Королева < Феодора > ,личинки = " << GreenLichinki << endl;
+		cout << "---Ресурсы: v = " << ResGreen["vetochka"] << "  r = " << ResGreen["rosinka"] << "  l = " << ResGreen["listik"] << "  k = " << ResGreen["kamushek"] << endl;
+		cout << "---Популяция " << Ant::Podschet(GreenWarrior) + Ant::Podschet(GRabochie) + s2 << ": r = " << Ant::Podschet(GRabochie) << ", v = " << Ant::Podschet(GreenWarrior) << ", o = " << s2 << " ;\n" << endl;
+		cout << "Куча 1: " << "v = " << stack1[0].vetochka << ", r = " << stack1[0].rosinka << ", l = " << stack1[0].listik << ", k = " << stack1[0].kamushek << endl;
+		cout << "Куча 2: " << "v = " << stack1[1].vetochka << ", r = " << stack1[1].rosinka << ", l = " << stack1[1].listik << ", k = " << stack1[1].kamushek << endl;
+		cout << "Куча 3: " << "v = " << stack1[2].vetochka << ", r = " << stack1[2].rosinka << ", l = " << stack1[2].listik << ", k = " << stack1[2].kamushek << endl;
+		cout << "Куча 4: " << "v = " << stack1[3].vetochka << ", r = " << stack1[3].rosinka << ", l = " << stack1[3].listik << ", k = " << stack1[3].kamushek << endl;
+		cout << "Куча 5: " << "v = " << stack1[4].vetochka << ", r = " << stack1[4].rosinka << ", l = " << stack1[4].listik << ", k = " << stack1[4].kamushek << endl;
+		if (FlagDop)
+			cout << "\n\x1b[35mГлобальный Эффект:\x1b[0m\n\x1b[36m< Раненый Жук > селится в случайную колонию на 3 дня \nпосле появления специального насекомого живет в данной колонии и впоследствии умирает;\x1b[0m" << endl;
+		if (day == 10)
+		{
+			cout << "\n\x1b[33mНаступила Засуха\x1b[0m\n";
+			int resursR = ResRed["vetochka"] + ResRed["listik"] + ResRed["rosinka"] + ResRed["kamushek"];
+			int resursG = ResGreen["vetochka"] + ResGreen["listik"] + ResGreen["rosinka"] + ResGreen["kamushek"];
+			(resursR > resursG) ? cout << "\x1b[31mВыжила Красная колония муравьев \x1b[0m" : cout << "\x1b[32mВыжила Зеленая колония муравьев\x1b[0m ";
+		}
+		if (day != 10) {
+			cout << "\n\n\t" << "\x1b[33mНажмите <1>(статистика зеленой колонии) или <2>(статистика красной колонии), <3>(Подробная статистика дня),\n \t\t\t\t\t<4>(Информация о каждом муравье)\x1b[0m" << "\n\n" << endl;
+			int ap = _getch();
+			switch (ap)
+			{
+			case 49://green
+				cout << "################################################" << endl;
+				cout << "\t\t\x1b[32mСтатистика\x1b[0m" << endl;
+				cout << "################################################" << endl;
+				cout << "колония < \x1b[32mЗеленая\x1b[0m > :\n" << "\x1b[36m---Королева < Феодора > :\x1b[0m" << endl;
+				cout << "здоровье = " << GreenQueen.health << ", защита = " << GreenQueen.armor << ", урон = " << GreenQueen.damage << endl;
+				cout << "---Ресурсы: v = " << ResGreen["vetochka"] << "  r = " << ResGreen["rosinka"] << "  l = " << ResGreen["listik"] << "  k = " << ResGreen["kamushek"] << endl;
+				cout << "<<<<<<<<<<\x1b[33m Рабочий \x1b[0m>>>>>>>>>>" << endl;
+				cout << "\x1b[36mtype: Легенда\x1b[0m\n" << "---Параметры: здоровье = 10, защита = 6" << endl;
+				cout << "\x1b[36mtype: Старший\x1b[0m\n" << "---Параметры: здоровье = 2, защита = 1" << endl;
+				cout << "\x1b[36mtype: Старший опытный\x1b[0m\n" << "---Параметры: здоровье = 2, защита = 1" << endl;
+				cout << "\x1b[35mмодификатор: берет любой ресурс\x1b[0m" << endl;
+				cout << "<<<<<<<<<<\x1b[33m Воин \x1b[0m>>>>>>>>>>" << endl;
+				cout << "\x1b[36mtype: Элитный\x1b[0m\n" << "---Параметры: здоровье = 8, защита = 4, урон = 3" << endl;
+				cout << "\x1b[36mtype: Легенда\x1b[0m\n" << "---Параметры: здоровье = 10, защита = 6, урон = 4" << endl;
+				cout << "\x1b[36mtype: Обычный хрупкий\x1b[0m\n" << "---Параметры: здоровье = 1, защита = 0, урон = 1" << endl;
+				cout << "\x1b[35mмодификатор: умирает с одного укуса\x1b[0m" << endl;
+				cout << "<<<<<<<<<<\x1b[33m Специальный \x1b[0m>>>>>>>>>>" << endl;
+				cout << "\x1b[36mtype: Ленивый мирный безобидный - Скарабей\x1b[0m\n" << "---Параметры: здоровье = 17, защита = 7, урон = 0" << endl;
+				cout << "\x1b[35mмодификаторы: \n*не может брать ресурс *может быть атакован *игнорирует эффекты агрессивных насекомых\x1b[0m" << endl;
+				cout << "################################################" << endl;
+				cout << "################################################" << endl;
+				FlagOut = 1;
+				break;
+			case 50:///red
+				cout << "################################################" << endl;
+				cout << "\t\t\x1b[31mСтатистика\x1b[0m" << endl;
+				cout << "################################################" << endl;
+				cout << "колония < \x1b[31mКрасные\x1b[0m > :\n" << "\x1b[36m---Королева < Агриппина > :\x1b[0m" << endl;
+				cout << "здоровье = " << RedQueen.health << ", защита = " << RedQueen.armor << ", урон = " << RedQueen.damage << endl;
+				cout << "---Ресурсы: v = " << ResRed["vetochka"] << "  r = " << ResRed["rosinka"] << "  l = " << ResRed["listik"] << "  k = " << ResRed["kamushek"] << endl;
+				cout << "<<<<<<<<<< \x1b[33mРабочий\x1b[0m >>>>>>>>>>" << endl;
+				cout << "\x1b[36mtype: Старший\x1b[0m\n" << "---Параметры: здоровье = 2, защита = 1" << endl;
+				cout << "\x1b[36mtype: Продвинутый\x1b[0m\n" << "---Параметры: здоровье = 6, защита = 2" << endl;
+				cout << "\x1b[36mtype: Обычный талантливый\x1b[0m\n" << "---Параметры: здоровье = 1, защита = 0" << endl;
+				cout << "\x1b[35mмодификатор: берет любой ресурс\x1b[0m" << endl;
+				cout << "<<<<<<<<<<\x1b[33m Воин\x1b[0m >>>>>>>>>>" << endl;
+				cout << "\x1b[36mtype: Обычный\x1b[0m\n" << "---Параметры: здоровье = 1, защита = 0, урон = 1" << endl;
+				cout << "\x1b[36mtype: Легендарный хрупкий\x1b[0m\n" << "---Параметры: здоровье = 10, защита = 6, урон = 4" << endl;
+				cout << "\x1b[35mмодификатор: умирает с одного укуса\x1b[0m" << endl;
+				cout << "<<<<<<<<<<\x1b[33m Специальный\x1b[0m >>>>>>>>>>" << endl;
+				cout << "\x1b[36mtype: Ленивый обычный агрессивный - Шмель\x1b[0m\n" << "---Параметры: здоровье = 20, защита = 8, урон = 12" << endl;
+				cout << "\x1b[35mмодификаторы: \n*не может брать ресурсы *может быть атакован *атакует неуязвимых\x1b[0m" << endl;
+				cout << "################################################" << endl;
+				cout << "################################################" << endl;
+				FlagOut = 1;
+				break;
+			case 51: {
+				FlagOut = 1;
+				cout << "\x1b[33mНачало Похода:\x1b[0m\n" << endl;
+				//podschet
+				int RedRab = 0, RedWar = 0, GreenRab = 0, GreenWar = 0;
+				bool RedS = 0, GreenS = 0;
+				for (int one = 0; one < 5; one++)
+				{
+					RedRab = 0, RedWar = 0, RedS = 0;
+					for (int i = 0; i < Rabochie.size(); i++)
+					{
+						(Rabochie[i].gps == (one + 1) && Rabochie[i].health > 0) ? RedRab++ : RedRab = RedRab;
+					}
+					for (int i = 0; i < RedWarrior.size(); i++)
+					{
+						(RedWarrior[i].gps == (one + 1) && RedWarrior[i].health > 0) ? RedWar++ : RedWar = RedWar;
+					}
+					(RedShmel.gps == (one + 1) && RedShmel.health > 0) ? RedS = 1 : RedS = RedS;
+					if (RedRab > 0 || RedWar > 0 || RedS > 0)
+						cout << "-С колонии \x1b[31mКрасные\x1b[0m отправились: р = " << RedRab << ", в = " << RedWar << ",\n o = " << RedS << " на кучу " << one + 1 << endl;
+				}
+				for (int two = 0; two < 5; two++)
+				{
+					GreenRab = 0, GreenWar = 0, GreenS = 0;
+					for (int i = 0; i < GRabochie.size(); i++)
+					{
+						(GRabochie[i].gps == (two + 1) && GRabochie[i].health > 0) ? GreenRab++ : GreenRab = GreenRab;
+					}
+					for (int i = 0; i < GreenWarrior.size(); i++)
+					{
+						(GreenWarrior[i].gps == (two + 1) && GreenWarrior[i].health > 0) ? GreenWar++ : GreenWar = GreenWar;
+					}
+					(GreenJuk.gps == (two + 1) && GreenJuk.health > 0) ? GreenS = 1 : GreenS = GreenS;
+					if (GreenRab > 0 || GreenWar > 0 || GreenS > 0)
+						cout << "-С колонии \x1b[32mЗеленые\x1b[0m отправились: р = " << GreenRab << ", в = " << GreenWar << ",\n o = " << GreenS << " на кучу " << two + 1 << endl;
+				}
+				cout << "\n\x1b[33mКонец Похода:\x1b[0m" << endl;
+				bool ZRedS = 0, ZGreenS = 0;
+				(RedShmel.health > 0) ? ZRedS = 1 : ZRedS = 0;
+				(GreenJuk.health > 0) ? ZGreenS = 1 : ZGreenS = 0;
+				cout << "\nВ колонию \x1b[31mКрасные\x1b[0m вернулись :\n---р = " << Ant::Podschet(Rabochie) << ", в = " << Ant::Podschet(RedWarrior) << ", o = " << ZRedS << endl;
+				cout << "---Добыто ресурсов: в = " << ResRed["vetochka"] - RVetochka << ", p = " << ResRed["rosinka"] - RRosinka << ", \nl = " << ResRed["listik"] - RListik << ", k = " << ResRed["kamushek"] - RKamushek << endl;
+				(RedLichinki > 0) ? cout << "---Новые личинки: " << RedLichinki << endl : cout << "---Выросли: Еще растут" << endl;
+				cout << "В колонию \x1b[32mЗеленые\x1b[0m вернулись :\n---р = " << Ant::Podschet(GRabochie) << ", в = " << Ant::Podschet(GreenWarrior) << ", o = " << ZGreenS << endl;
+				cout << "---Добыто ресурсов: в = " << ResGreen["vetochka"] - GVetochka << ", p = " << ResGreen["rosinka"] - GRosinka << ", \nl = " << ResGreen["listik"] - GListik << ", k = " << ResGreen["kamushek"] - GKamushek << endl;
+				(GreenLichinki > 0) ? cout << "---Новые личинки: " << GreenLichinki << endl : cout << "---Выросли: Еще растут" << endl;
+				break; }
+			case 52: {
+				FlagOut = 1;
+				cout << "\x1b[32m1)Легендарный Рабочий\t2)Старший Рабочий\t3)Старший опытный Рабочий\n4)Элитный Воин\t 5)Легендарный Воин\t6)Обычный хрупкий Воин\x1b[0m" << endl;
+				cout << "\x1b[31m7)Старший Рабочий\t8)Продвинутый Рабочий\t9)Обычный талантливый Рабочий\n0)Легендарный хрупкий Воин\t-)Обычный Воин\x1b[0m" << endl;
+				int uk = _getch();
+				switch (uk)
+				{
+				case 49:
+					Worker::PrintV("Легендарный Рабочий", 10, 6, 0, "Феодора", 'r');
+					break;
+				case 50:
+					Worker::PrintV("Старший Рабочий", 2, 1, 0, "Феодора", 'r');
+					break;
+				case 51:
+					Worker::PrintV("Старший опытный Рабочий", 2, 1, 0, "Феодора", 'r');
+					break;
+				case 52:
+					Warrior::PrintV("Элитный Воин", 8, 4, 3, "Феодора", 'v');
+					break;
+				case 53:
+					Warrior::PrintV("Легенда Воин", 10, 6, 4, "Феодора", 'v');
+					break;
+				case 54:
+					Warrior::PrintV("Обычный хрупкий Воин", 1, 0, 1, "Феодора", 'v');
+					break;
+				case 55:
+					Worker::PrintV("Старший Рабочий", 2, 1, 0, "Агриппина", 'r');
+					break;
+				case 56:
+					Worker::PrintV("Продвинутый Рабочий", 6, 2, 0, "Агриппина", 'r');
+					break;
+				case 57:
+					Worker::PrintV("Обычный талантливый Рабочий", 1, 0, 0, "Агриппина", 'r');
+					break;
+				case 48:
+					Warrior::PrintV("Легендарный хрупкий Воин", 10, 6, 4, "Агриппина", 'v');
+					break;
+				case '-':
+					Warrior::PrintV("Обычный Воин", 1, 0, 1, "Агриппина", 'v');
+					break;
+				default:
+					break;
+				}
+				break;
+			}
+			default:
+				break;
+			}
+			if (FlagOut == 1)
+				int b = _getch();//button
+		}
+	}
+	return 0;
+}
