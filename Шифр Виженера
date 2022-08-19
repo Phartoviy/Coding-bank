@@ -1,0 +1,62 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main()
+{
+	setlocale(LC_ALL, "Rus");
+
+	cout << "Шифр ВИЖЕНЕРА\n" << endl;
+	string DoubleWord = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz";
+	string Smsg = "";
+	string msg, key, Zmsg;
+	cout << "Использовать только английские буквы\n";
+	cout << "Введите сообщение: ";
+	getline(cin, msg);
+	cout << "Введите кодовое слово: ";
+	getline(cin, key);
+
+	vector <int> v;
+	for (int g = 0; g < key.length(); g++)
+	{
+		for (int h = 0; h < DoubleWord.length(); h++)
+		{
+			if (key[g] == DoubleWord[h])
+			{
+				v.push_back(h);
+				break;
+			}
+		}
+	}
+	int siz = v.size();
+	while (v.size() < msg.length())
+	{
+		for (int i = 0; i < siz; i++)
+		{
+			v.push_back(v[i]);
+		}
+	}
+	int count = 0;
+	for (int i = 0; i < msg.length(); i++)
+	{
+		if (msg[i] == ' ')
+		{
+			Smsg += " ";
+			continue;
+		}
+		for (int j = 0; j < DoubleWord.length(); j++)//шифрование
+		{
+			if (msg[i] == DoubleWord[j])
+			{
+				Smsg += DoubleWord[(j + v[count])%26];
+				count++;
+				break;
+			}
+		}
+	}
+	cout << "\nЗакодированное сообщение : " << Smsg << endl;
+
+
+	return 0;
+}
