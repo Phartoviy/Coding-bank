@@ -1,0 +1,87 @@
+#include <iostream>
+#include <time.h>
+#include <conio.h>
+using namespace std;
+
+int PrintZNak(int b)
+{
+	int a;
+	cout << "\x1b[33mВведите 1.Ножницы 2.Камень 3.Бумага\x1b[0m" << endl;
+	a = _getch();
+	if (a == 27)
+		return -1;
+	if (a == 49 || a == 50 || a == 51)
+	{
+		switch (a)
+		{
+		case 49:
+		{	cout << "Вы выбрали Ножницы" << endl;
+		if (b == 2)
+			return 0;
+		if (b == 3)
+			return 1;
+		break;
+		}
+		case 50:
+		{	cout << "Вы выбрали Камень" << endl;
+		if (b == 1)
+			return 1;
+		if (b == 3)
+			return 0;
+		break;
+		}
+		case 51:
+		{
+			cout << "Вы выбрали Бумага" << endl;
+			if (b == 1)
+				return 0;
+			if (b == 2)
+				return 1;
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	else
+	{
+		cout << "\x1b[36mНекорректный ввод\x1b[0m\n" << endl;
+		return 999;
+	}
+	return 99;//Ничья
+}
+
+int main()
+{
+	setlocale(LC_ALL, "Rus");
+	//Камень ножницы бумага
+	srand(time(NULL));
+	while(true){
+		int f = rand() % 3 + 1;
+		int v = PrintZNak(f);
+		if (v == 999)
+			continue;
+		if (v == -1)
+			break;
+		if (f == 1)
+			cout << "Kомпьютер выбрал Ножницы" << endl;
+		if (f == 2)
+			cout << "Kомпьютер выбрал Камень" << endl;
+		if (f == 3)
+			cout << "Kомпьютер выбрал Бумага" << endl;
+		switch (v)
+		{
+		case 1:
+			cout << "\x1b[32mВы победили\x1b[0m\n\n\n";
+			break;
+		case 0:
+			cout << "\x1b[31mПобедил компьютер\x1b[0m\n\n\n";
+			break;
+		case 99:
+			cout << "\x1b[33mНичья\x1b[0m\n\n\n";
+			break;
+		}
+	}
+
+	return 0;
+}
