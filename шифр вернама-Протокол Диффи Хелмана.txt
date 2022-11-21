@@ -1,0 +1,134 @@
+#include <iostream>
+#include <time.h>
+#include <bitset>
+#include <string>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+int main()
+{
+	setlocale(LC_ALL, "Rus");
+	srand(time(NULL));
+	cout << "\x1b[33mШифр Вернама(Ключ - протокол Диффи-Хелмана) \x1b[0m" << endl;
+	string msg, rsg, rsg2;
+	string k;
+	bool prkl = true;
+	string book = "_ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	string trm, geely, resultat, promezh;
+	vector <int> v;
+	int h;
+	for (int i = 1; i < 1000; i++) //формирование списка простых чисел
+	{
+		h = 0;
+		for (int j = 1; j < i; j++)
+		{
+			if (i % j == 0)
+				h++;
+		}
+		if (h == 1)
+			v.push_back(i);
+	}
+	cout << "\x1b[31mПримечание: буквы только  английские!\x1b[0m" << endl;
+	cout << "\x1b[32mВведите сообщение :  \x1b[0m";
+	int Op, Og, Za, Zb, randomIt;
+	randomIt = rand() % 160 + 6;
+	Op = v[randomIt];     //открытые данные
+	randomIt = rand() % 160 + 6;
+	Og = v[randomIt];    //открытые данные
+	Za = rand() % 1000 + 25; //Первый генерирует свое число (закрытые данные)
+	Zb = rand() % 1000 + 25; //Второй генерирует свое число (закрытые данные)
+	
+	getline(cin, msg);
+	for (int f = 0; f < msg.length(); f++)
+	{
+		for (int m = 0; m < book.length(); m++)
+		{
+
+			if (msg[f] == book[m])
+			{
+				geely = bitset<7>(m).to_string();
+				trm = trm + geely + ".";         //закодированное сообщение
+			}
+		}
+	}
+	int A = pow(Og, Za); //закрытое число первого
+	A = A % Op;  //секретный ключ
+	int B = pow(Og, Zb); //закрытое число второго
+	B = B % Op;  //секретный ключ
+	if (A == B)
+	{
+		k = bitset<11>(abs(A)).to_string();
+		int it = 1;
+		while (k.length() < trm.length())
+		{
+			k =k + bitset<11>((abs(A)+it)).to_string();
+			it++;
+		}
+	}
+	for (int p = 0; p < trm.length(); p++)
+	{
+		if (p == trm.length() - 1)
+		{
+			break;
+		}
+		if (trm[p] == '.')
+		{
+			rsg += ".";
+			continue;
+		}
+		if (trm[p] == k[p])
+		{
+			rsg += "0";
+		}
+		else
+		{
+			rsg += "1";
+		}
+	}
+	//new code rasSifr trm stroki
+	for (int z = 0; z < rsg.length(); z++)
+	{
+		if (rsg[z] == '.')
+		{
+			rsg2 += ".";
+			continue;
+		}
+
+		if (rsg[z] == k[z])
+		{
+			rsg2 += "0";
+		}
+		else
+		{
+			rsg2 += "1";
+		}
+	}
+	//stage 2 rasifr
+	rsg2 += ".";
+	for (int v = 0; v < rsg2.length(); v++)
+	{
+		if (rsg2[v] != '.')
+		{
+			promezh += rsg2[v];
+		}
+		else
+		{
+			for (int s = 0; s < book.length(); s++)
+			{
+				if (promezh == bitset<7>(s).to_string())
+				{
+					resultat += book[s];
+				}
+			}
+			promezh.clear();
+		}
+	}
+	cout << "\x1b[35mКлюч : " << abs(A) << "\x1b[0m" << endl;
+	cout << "\x1b[35mКлюч : " << k <<"\x1b[0m"<< endl;
+	cout << "\x1b[36mЗашифрованное сообщение = " << rsg <<"\x1b[0m"<< endl;
+	cout << "\x1b[32mИсходное сообщение = " <<resultat <<"\x1b[0m"<< endl;
+
+	system("pause");
+	return 0;
+}
