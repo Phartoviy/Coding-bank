@@ -18,6 +18,7 @@ violet = (238, 130, 238)
 lime = (0, 255, 0)
 indigo = (75, 0, 130)
 golden = (218, 165, 32)
+firered = (178, 34, 34)
 
 DIS_WIDTH = 800
 DIS_HEIGHT = 600
@@ -29,10 +30,7 @@ global records
 records = False
 
 global menu
-menu = True#Переменная отвечающая за меню
-
-global last_records
-last_records = []
+menu = True
 
 
 try:
@@ -70,6 +68,9 @@ global color_exit
 color_exit = yellow
 global color_records
 color_records = yellow
+
+global flag
+flag = 0
  
 font_style = pygame.font.SysFont("bahnschrift", 20)
 score_font = pygame.font.SysFont("comicsansms", 20)
@@ -77,10 +78,31 @@ pause_style = pygame.font.SysFont("verdana", 40)
 menu_style = pygame.font.SysFont("arial", 45)
 records_style = pygame.font.SysFont("arial", 25)
 
+class Food:
+    
+    def __init__(self,color, x,y):
+        self.__color = color
+        self.__x = x
+        self.__y = y
+    def get_color(self):
+        return self.__color
+    
+    def get_x(self):
+        return self.__x
+    
+    def get_y(self):
+        return self.__y
+
+    def set_x(self, x):
+        self.__x = x
+
+    def set_y(self, y):
+        self.__y = y
+
+
 def Your_score(score):
     value = score_font.render("Очки: " + str(score), True, yellow)
     window.blit(value, [DIS_WIDTH-100, 0])
- 
  
  
 def our_snake(snake_block, snake_list):
@@ -92,6 +114,7 @@ def text(msg, color):
     mesg = font_style.render(msg, True, color)
     window.blit(mesg, [DIS_WIDTH / 6,
                     DIS_HEIGHT / 3])
+
 
 def screen_pause(msg):
     pygame.draw.rect(window, color_rect, 
@@ -161,9 +184,7 @@ def screen_records():
 
 def menu_control():
         global snake_speed
-        global menu
-        global game_over
-        global game_close
+        global menu, game_over, game_close
         global color_easy,color_medium,color_hard
         global color_new, color_exit, color_records
         pygame.mouse.set_visible(True)#visible mouse
@@ -202,7 +223,7 @@ def menu_control():
                                         elif (x>250 and x<600 and y>230 and y<380):
                                             color_medium = orange
                                         elif (x>250 and x<600 and y>430 and y<580):
-                                            color_hard = red
+                                            color_hard = firered
                                         else:
                                             color_easy = yellow
                                             color_medium = yellow
@@ -281,16 +302,19 @@ def gameLoop():
     
     snake_List = []
     Length_of_snake = 1
+
  
     foodx = round(random.randrange(60, DIS_WIDTH - snake_block-60) / 10.0) * 10.0
     foody = round(random.randrange(60, DIS_HEIGHT - snake_block-60) / 10.0) * 10.0
+
+    apple = Food(red, foodx, foody)
  
     while not game_over:
         
         menu_control()
         pygame.mouse.set_visible(False)#visible mouse          
         global paused
-        while paused == True:#Цикл pause
+        while paused == True:
             window.fill(blue)
             screen_pause("Pause")
             pygame.display.update()
@@ -327,21 +351,26 @@ def gameLoop():
                         gameLoop()
  
         for event in pygame.event.get():
+            global flag
             if event.type == pygame.QUIT:
                 game_over = True
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                if (event.key == pygame.K_LEFT or event.key == pygame.K_a) and flag != 2 :
                     x1_change = -snake_block
                     y1_change = 0
-                elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                    flag = 1
+                elif (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and flag != 1:
                     x1_change = snake_block
                     y1_change = 0
-                elif event.key == pygame.K_UP or event.key == pygame.K_w:
+                    flag = 2
+                elif (event.key == pygame.K_UP or event.key == pygame.K_w) and flag != 4:
                     y1_change = -snake_block
                     x1_change = 0
-                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                    flag = 3
+                elif (event.key == pygame.K_DOWN or event.key == pygame.K_s) and flag != 3:
                     y1_change = snake_block
                     x1_change = 0
+                    flag = 4
                 elif event.key == pygame.K_p:
                     paused = True
             if event.type == pygame.MOUSEBUTTONDOWN:#Событие mouse
@@ -349,17 +378,14 @@ def gameLoop():
                 if event.button == 1:
                     x,y = pygame.mouse.get_pos()
                     
-            
-    
-            
  
         if x1 >= DIS_WIDTH or x1 < 0 or y1 >= DIS_HEIGHT or y1 < 0:
             game_close = True
         x1 += x1_change
         y1 += y1_change
         window.fill(blue)
-        pygame.draw.rect(window, red,
-                         [foodx, foody, snake_block,
+        pygame.draw.rect(window, apple.get_color(),
+                         [apple.get_x(), apple.get_y(), snake_block,
                           snake_block],
                          5)
         pygame.draw.line(window, color_line, 
@@ -390,9 +416,11 @@ def gameLoop():
  
         pygame.display.update()
  
-        if x1 == foodx and y1 == foody:
+        if x1 == apple.get_x() and y1 == apple.get_y():
             foodx = round(random.randrange(60, DIS_WIDTH - snake_block-60) / 10.0) * 10.0
             foody = round(random.randrange(60, DIS_HEIGHT - snake_block-60) / 10.0) * 10.0
+            apple.set_x(foodx)
+            apple.set_y(foody)
             Length_of_snake += 1
             if (catch != -999):
                 catch.play()
@@ -405,3 +433,6 @@ def gameLoop():
  
  
 gameLoop()
+
+
+
