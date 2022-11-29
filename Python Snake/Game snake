@@ -19,6 +19,7 @@ lime = (0, 255, 0)
 indigo = (75, 0, 130)
 golden = (218, 165, 32)
 firered = (178, 34, 34)
+ored = (255, 69, 0)
 
 DIS_WIDTH = 800
 DIS_HEIGHT = 600
@@ -31,6 +32,14 @@ records = False
 
 global menu
 menu = True
+
+try:
+    image = pygame.image.load("fon.png")
+    image_table = pygame.image.load("fon-record.jpg")
+    image_over = pygame.image.load("fon_gameover.jpg")
+except FileNotFoundError:
+    image = -999
+
 
 
 try:
@@ -121,7 +130,7 @@ def screen_pause(msg):
                  (250, 200, 350, 200), 8)
     pygame.draw.rect(window, color_rect, 
                  (225, 175, 400, 250), 8)
-    mesg = pause_style.render(msg, True, indigo)
+    mesg = pause_style.render(msg, True, red)
     window.blit(mesg, [DIS_WIDTH / 2-40,
                     DIS_HEIGHT / 2-25])
     
@@ -153,12 +162,13 @@ def screen_records():
             file = open("records-text.txt",'r')
         except FileNotFoundError:
             file = 0
-        window.fill(blue)
+        #window.fill(blue)
+        image!=-999 if window.blit(image_table,(0,0)) else window.fill(blue)
         pygame.draw.rect(window, color_rect, 
                  (50, 50, 700, 450), 8)
         pygame.draw.rect(window, color_rect, 
                  (350, 520, 100, 65), 8)
-        mesg = menu_style.render("<-", True, yellow)
+        mesg = menu_style.render("<-", True, red)
         window.blit(mesg, [380,
                     525])
         for i in range(9):
@@ -167,7 +177,7 @@ def screen_records():
                 line = line.replace('\n','')
                 mesg = menu_style.render("Результат  "+alphavit[i]+
                                         " :         "+
-                                        str(line), True, yellow)
+                                        str(line), True, orange)
                 window.blit(mesg, [240,
                     60+45*i])
         pygame.display.update()
@@ -189,7 +199,8 @@ def menu_control():
         global color_new, color_exit, color_records
         pygame.mouse.set_visible(True)#visible mouse
         while menu == True:#Цикл menu
-            window.fill(blue)
+            #window.fill(blue)
+            image!=-999 if window.blit(image,(0,0)) else window.fill(blue)
             screen_menu(color_records, color_new, color_exit)
             pygame.display.update()
             for event in pygame.event.get():
@@ -252,7 +263,8 @@ def menu_control():
                         
 
 def screen_level_difficulty(color1, color2, color3):
-    window.fill(blue)
+    #window.fill(blue)
+    image!=-999 if window.blit(image,(0,0)) else window.fill(blue)
     pygame.draw.rect(window, color_rect, 
                  (250, 30, 350, 150), 8)
     pygame.draw.rect(window, color_rect, 
@@ -315,7 +327,8 @@ def gameLoop():
         pygame.mouse.set_visible(False)#visible mouse          
         global paused
         while paused == True:
-            window.fill(blue)
+            #window.fill(blue)
+            image!=-999 if window.blit(image,(0,0)) else window.fill(blue)
             screen_pause("Pause")
             pygame.display.update()
             for event in pygame.event.get():
@@ -323,7 +336,8 @@ def gameLoop():
                     if event.key == pygame.K_p:
                         paused = False
         while game_close == True:
-            window.fill(blue)
+            #window.fill(blue)
+            image!=-999 if window.blit(image_over,(0,0)) else window.fill(blue)
             pygame.draw.ellipse(window, orange, 
                     (100, 165, 550, 100),8)
             pygame.draw.ellipse(window, orange, 
@@ -433,6 +447,7 @@ def gameLoop():
  
  
 gameLoop()
+
 
 
 
